@@ -257,7 +257,7 @@ def main_worker(gpu, ngpus_per_node, args):
     cudnn.benchmark = True
 
     # Data loading code
-    traindir = os.path.join(args.data, 'train')
+    #traindir = os.path.join(args.data, 'train')
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
@@ -265,7 +265,7 @@ def main_worker(gpu, ngpus_per_node, args):
     transform_train = DataAugmentationForSIMTraining(args)
     print(f'Pre-train data transform:\n{transform_train}')
 
-    train_dataset = ImgWithPickledBoxesDataset(os.path.join(traindir), transform=transform_train)
+    train_dataset = ImgWithPickledBoxesDataset(os.path.join(args.data), transform=transform_train)
     print(f'Build dataset: train images = {len(train_dataset)}')
 
     if args.distributed:
