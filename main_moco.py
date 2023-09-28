@@ -35,7 +35,8 @@ import moco.loader
 import moco.optimizer
 
 import vits
-
+from util.augmentation import DataAugmentationForSIMTraining
+from util.datasets import ImgWithPickledBoxesDataset
 
 torchvision_model_names = sorted(name for name in torchvision_models.__dict__
     if name.islower() and not name.startswith("__")
@@ -259,35 +260,11 @@ def main_worker(gpu, ngpus_per_node, args):
                                      std=[0.229, 0.224, 0.225])
 
     # follow BYOL's augmentation recipe: https://arxiv.org/abs/2006.07733
-    augmentation1 = [
-        transforms.RandomResizedCrop(224, scale=(args.crop_min, 1.)),
-        transforms.RandomApply([
-            transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
-        ], p=0.8),
-        transforms.RandomGrayscale(p=0.2),
-        transforms.RandomApply([moco.loader.GaussianBlur([.1, 2.])], p=1.0),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        normalize
-    ]
+    transform_train = DataAugmentationForSIMTraining(args)
+    print(f'Pre-train data transform:\n{transform_train}')
 
-    augmentation2 = [
-        transforms.RandomResizedCrop(224, scale=(args.crop_min, 1.)),
-        transforms.RandomApply([
-            transforms.ColorJitter(0.4, 0.4, 0.2, 0.1)  # not strengthened
-        ], p=0.8),
-        transforms.RandomGrayscale(p=0.2),
-        transforms.RandomApply([moco.loader.GaussianBlur([.1, 2.])], p=0.1),
-        transforms.RandomApply([moco.loader.Solarize()], p=0.2),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        normalize
-    ]
-
-    train_dataset = datasets.ImageFolder(
-        traindir,
-        moco.loader.TwoCropsTransform(transforms.Compose(augmentation1), 
-                                      transforms.Compose(augmentation2)))
+    train_dataset = ImgWithPickledBoxesDataset(os.path.join(traindir), transform=transform_train)
+    print(f'Build dataset: train images = {len(train_dataset)}')
 
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
@@ -334,7 +311,7 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
     end = time.time()
     iters_per_epoch = len(train_loader)
     moco_m = args.moco_m
-    for i, (images, _) in enumerate(train_loader):
+    for i, sample in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
 
@@ -344,15 +321,18 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
         if args.moco_m_cos:
             moco_m = adjust_moco_momentum(epoch + i / iters_per_epoch, args)
 
+
+        x1 = sample['x1']
+        x2 = sample['x2']
         if args.gpu is not None:
-            images[0] = images[0].cuda(args.gpu, non_blocking=True)
-            images[1] = images[1].cuda(args.gpu, non_blocking=True)
+            x1 = x1.cuda(args.gpu, non_blocking=True)
+            x2 = x2.cuda(args.gpu, non_blocking=True)
 
         # compute output
         with torch.cuda.amp.autocast(True):
-            loss = model(images[0], images[1], moco_m)
+            loss = model(x1, x2, moco_m)
 
-        losses.update(loss.item(), images[0].size(0))
+        losses.update(loss.item(), x1.size(0))
         if args.rank == 0:
             summary_writer.add_scalar("loss", loss.item(), epoch * iters_per_epoch + i)
 
