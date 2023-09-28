@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 
 from unetr_vits import unetr_vit_base_patch16, cell_vit_base_patch16
+from util.misc import LayerNorm
 from util.pos_embed import interpolate_pos_embed
 
 
@@ -70,6 +71,11 @@ class MoCo(nn.Module):
                                                num_tissue_classes=19,
                                                embed_dim=768,
                                                extract_layers=[3, 6, 9, 12])
+
+        self.teacher_norm = LayerNorm(256, elementwise_affine=False)
+        for p in self.teacher_norm.parameters():
+            p.requires_grad = False
+
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
         self.base_encoder.freeze_encoder()
@@ -107,7 +113,7 @@ class MoCo(nn.Module):
             param_m.data = param_m.data * m + param_b.data * (1. - m)
 
     def compute_unigrad_loss(self, pred, target):
-        pred = self.student_norm(pred)
+        #pred = self.student_norm(pred)
         with torch.no_grad():
             target = self.teacher_norm(target)
 
