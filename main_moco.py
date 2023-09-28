@@ -305,6 +305,9 @@ def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
 
         x1 = sample['x1']
         x2 = sample['x2']
+        print('!!!')
+        print(x1.shape)
+
         boxes1 = sample['boxes1']
         boxes2 = sample['boxes2']
         if args.gpu is not None:
