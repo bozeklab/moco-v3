@@ -130,6 +130,8 @@ class MoCo(nn.Module):
         b0, b1 = self.base_encoder(x1)
         print('!!!!!')
         print(b0.shape)
+        print('!!!!!')
+        print(b1.shape)
 
         q1 = self.predictor(self.base_encoder(x1))
         q2 = self.predictor(self.base_encoder(x2))
