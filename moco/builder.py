@@ -154,9 +154,9 @@ class MoCo_ResNet(MoCo):
 
 
 class MoCo_ViT(MoCo):
-    def _build_projector_and_predictor_mlps(self, dim, mlp_dim):
-        hidden_dim = 768#self.base_encoder.head.weight.shape[1]
-        del self.base_encoder.head, self.momentum_encoder.head # remove original fc layer
+    def _build_projector_and_predictor_mlps(self, dim, mlp_dim, hidden_dim=768):
+        #self.base_encoder.head.weight.shape[1]
+        #del self.base_encoder.head, self.momentum_encoder.head # remove original fc layer
 
         # projectors
         self.base_encoder.head = self._build_mlp(3, hidden_dim, mlp_dim, dim)
