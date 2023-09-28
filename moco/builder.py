@@ -55,21 +55,21 @@ class MoCo(nn.Module):
         self.T = T
 
         # build encoders
-        self.base_encoder = self._prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+        self.base_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+                                           init_values=None,
+                                           drop_path_rate=0.1,
+                                           num_nuclei_classes=6,
+                                           num_tissue_classes=19,
+                                           embed_dim=468,
+                                           extract_layers=[3, 6, 9, 12])
+
+        self.momentum_encoder = ._prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
                                                 init_values=None,
                                                 drop_path_rate=0.1,
                                                 num_nuclei_classes=6,
                                                 num_tissue_classes=19,
-                                                embed_dim=468,
+                                                embed_dim=768,
                                                 extract_layers=[3, 6, 9, 12])
-
-        self.momentum_encoder = self._prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
-                                                    init_values=None,
-                                                    drop_path_rate=0.1,
-                                                    num_nuclei_classes=6,
-                                                    num_tissue_classes=19,
-                                                    embed_dim=768,
-                                                    extract_layers=[3, 6, 9, 12])
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
         for param_b, param_m in zip(self.base_encoder.parameters(), self.momentum_encoder.parameters()):
