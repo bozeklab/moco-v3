@@ -144,8 +144,9 @@ class MoCo(nn.Module):
         print(N)
         labels = (self.labels[:N] + N * torch.distributed.get_rank())
         print('aaaa')
-        x = nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
         print(labels)
+        x = nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
+        print(x)
         return x
 
     def forward(self, x1, x2, boxes1, boxes2, m):
