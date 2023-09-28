@@ -289,7 +289,7 @@ class CellViT(nn.Module):
             x.shape[-1] % self.patch_size == 0
         ), "Img must have a shape of that is divisible by patch_size (token_size)"
 
-
+        _, _, z = self.encoder(x)
         z0, z1, z2, z3, z4 = x, *z
 
         # performing reshape for the convolutional layers and upsampling (restore spatial dimension)
