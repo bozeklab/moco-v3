@@ -138,6 +138,8 @@ class MoCo(nn.Module):
         q1 = self.predictor(self.base_encoder(x1, boxes1, mask))
         q2 = self.predictor(self.base_encoder(x2, boxes2, mask))
 
+        print(mask)
+
         with torch.no_grad():  # no gradient
             _mask = mask.clone()
 
@@ -146,6 +148,7 @@ class MoCo(nn.Module):
             # compute momentum features as targets
             k1 = self.momentum_encoder(x1, boxes1, _mask)
             k2 = self.momentum_encoder(x2, boxes2, _mask)
+            print('momentum')
 
         return self.contrastive_loss(q1, k2) + self.contrastive_loss(q2, k1)
 
