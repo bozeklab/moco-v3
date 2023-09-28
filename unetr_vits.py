@@ -337,7 +337,7 @@ class CellViT(nn.Module):
         num_box = boxes_info.shape[1]
         #batch_size = x.shape[0]
         #embed_dim = x.shape[]
-        x = x.view(batch_size, h, w, self.embed_dim).permute(0, 3, 1, 2)
+        x = x.view(batch_size, h, w, embed_dim).permute(0, 3, 1, 2)
 
         batch_index = torch.arange(0.0, batch_size).repeat(num_box).view(num_box, -1) \
             .transpose(0, 1).flatten(0, 1).to(x.device)
@@ -349,7 +349,7 @@ class CellViT(nn.Module):
         aligned_out = roi_align(input=x, boxes=roi_info, spatial_scale=scale_factor,
                                 output_size=8)
 
-        aligned_out = aligned_out.view(batch_size, num_box, self.embed_dim, 8, 8)[mask]
+        aligned_out = aligned_out.view(batch_size, num_box, embed_dim, 8, 8)[mask]
         aligned_out.view(-1, self.embed_dim, 8, 8)
 
         return aligned_out
