@@ -282,31 +282,26 @@ def main(args):
     print('Training time {}'.format(total_time_str))
 
 
-def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
-    batch_time = AverageMeter('Time', ':6.3f')
-    data_time = AverageMeter('Data', ':6.3f')
-    learning_rates = AverageMeter('LR', ':.4e')
-    losses = AverageMeter('Loss', ':.4e')
-    progress = ProgressMeter(
-        len(train_loader),
-        [batch_time, data_time, learning_rates, losses],
-        prefix="Epoch: [{}]".format(epoch))
-
+def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
     # switch to train mode
     model.train()
+    metric_logger = misc.MetricLogger(delimiter="  ")
+    metric_logger.add_meter('lr', misc.SmoothedValue(window_size=1, fmt='{value:.6f}'))
+    header = 'Epoch: [{}]'.format(epoch)
+    print_freq = 50
 
-    end = time.time()
+    if log_writer is not None:
+        print('log_dir: {}'.format(log_writer.log_dir))
+
     iters_per_epoch = len(train_loader)
     moco_m = args.moco_m
-    for i, sample in enumerate(train_loader):
+    for data_iter_step, sample in enumerate(metric_logger.log_every(train_loader, print_freq, header)):
         # measure data loading time
-        data_time.update(time.time() - end)
 
         # adjust learning rate and momentum coefficient per iteration
-        lr = adjust_learning_rate(optimizer, epoch + i / iters_per_epoch, args)
-        learning_rates.update(lr)
+        lr = adjust_learning_rate(optimizer, epoch + data_iter_step / iters_per_epoch, args)
         if args.moco_m_cos:
-            moco_m = adjust_moco_momentum(epoch + i / iters_per_epoch, args)
+            moco_m = adjust_moco_momentum(epoch + data_iter_step / iters_per_epoch, args)
 
         x1 = sample['x1']
         x2 = sample['x2']
@@ -322,9 +317,7 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
         with torch.cuda.amp.autocast(True):
             loss = model(x1, x2, boxes1, boxes2, moco_m)
 
-        losses.update(loss.item(), x1.size(0))
-        if args.rank == 0:
-            summary_writer.add_scalar("loss", loss.item(), epoch * iters_per_epoch + i)
+        loss_value = loss.item()
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -332,12 +325,24 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
         scaler.step(optimizer)
         scaler.update()
 
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
+        loss_value_reduce = misc.all_reduce_mean(loss_value)
+        outputs_reduced = {k_: misc.all_reduce_mean(v_) for k_, v_ in outputs.items()}
+        if log_writer is not None:
+            """ We use epoch_1000x as the x-axis in tensorboard.
+            This calibrates different curves when batch size changes.
+            """
+            epoch_1000x = int((data_iter_step / len(train_loader) + epoch) * 1000)
+            log_writer.add_scalar('train_loss', loss_value_reduce, epoch_1000x)
+            log_writer.add_scalar('lr', lr, epoch_1000x)
+            if scaler is not None:
+                log_writer.add_scalar('loss_scale', scaler, epoch_1000x)
+            for k_, v_ in outputs_reduced.items():
+                log_writer.add_scalar(f'train/{k_}', v_, epoch_1000x)
 
-        if i % args.print_freq == 0:
-            progress.display(i)
+    # gather the stats from all processes
+    metric_logger.synchronize_between_processes()
+    print("Averaged stats:", metric_logger)
+    return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
