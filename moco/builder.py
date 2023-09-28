@@ -121,7 +121,7 @@ class MoCo(nn.Module):
         N = logits.shape[0]  # batch size per GPU
         print('rank')
         print(torch.distributed.get_rank())
-        labels = (torch.arange(N, dtype=torch.long) + N * torch.distributed.get_rank()).cuda()
+        labels = (torch.arange(N, dtype=torch.long)).cuda()
         print(N)
         print(labels)
         return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
