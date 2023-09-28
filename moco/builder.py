@@ -119,6 +119,8 @@ class MoCo(nn.Module):
         print('!!!!')
         print(logits.shape)
         N = logits.shape[0]  # batch size per GPU
+        print('rank')
+        print(torch.distributed.get_rank())
         labels = (torch.arange(N, dtype=torch.long) + N * torch.distributed.get_rank()).cuda()
         print(N)
         print(labels)
