@@ -147,6 +147,12 @@ def get_args_parser():
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
 
+    parser.add_argument('--auto_resume', default=True)
+    parser.add_argument('--save_freq', default=50, type=int)
+    parser.add_argument('--save_latest_freq', default=1, type=int)
+    parser.add_argument('--fp32', default=False, action='store_true')
+    parser.add_argument('--amp_growth_interval', default=2000, type=int)
+
     return parser
 
 
@@ -227,6 +233,8 @@ def main(args):
     elif args.optimizer == 'adamw':
         optimizer = torch.optim.AdamW(model.parameters(), args.lr,
                                 weight_decay=args.weight_decay)
+    print(optimizer)
+    loss_scaler = NativeScaler(enabled=(not args.fp32), growth_interval=args.amp_growth_interval)
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
