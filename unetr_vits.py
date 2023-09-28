@@ -295,7 +295,7 @@ class CellViT(nn.Module):
         self.box_embed = PatchEmbed(img_size=16, patch_size=8,
                                     in_chans=embed_dim, embed_dim=embed_dim)
 
-    def forward(self, x, boxes, ):
+    def forward(self, x, boxes, mask):
         """Forward pass
 
         Args:
