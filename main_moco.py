@@ -244,7 +244,7 @@ def main(args):
             data_loader_train.sampler.set_epoch(epoch)
 
         # train for one epoch
-        train(data_loader_train, model, optimizer, scaler, log_writer, epoch, args)
+        train(data_loader_train, model, optimizer, loss_scaler, log_writer, epoch, args)
 
         dist.barrier()
 
