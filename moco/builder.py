@@ -72,10 +72,6 @@ class MoCo(nn.Module):
                                                embed_dim=768,
                                                extract_layers=[3, 6, 9, 12])
 
-        self.teacher_norm = LayerNorm(256, elementwise_affine=False)
-        for p in self.teacher_norm.parameters():
-            p.requires_grad = False
-
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
         self.base_encoder.freeze_encoder()
@@ -143,11 +139,8 @@ class MoCo(nn.Module):
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
         N = logits.shape[0]  # batch size per GPU
-        print('before')
         labels = (torch.arange(N, dtype=torch.long) + N * torch.distributed.get_rank())
-        print(labels)
         labels = labels.cuda()
-        print('after')
         return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
 
     def forward(self, x1, x2, boxes1, boxes2, m):
