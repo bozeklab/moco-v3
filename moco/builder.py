@@ -111,7 +111,9 @@ class MoCo(nn.Module):
         q = nn.functional.normalize(q, dim=1)
         k = nn.functional.normalize(k, dim=1)
         # gather all targets
+        print('before gather')
         k = concat_all_gather(k)
+        print('after gather')
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
         N = logits.shape[0]  # batch size per GPU
