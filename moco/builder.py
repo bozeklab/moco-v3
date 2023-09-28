@@ -66,8 +66,9 @@ class MoCo(nn.Module):
 
         return nn.Sequential(*mlp)
 
-    def _prepare_model(chkpt_dir_vit, **kwargs):
+    def _prepare_model(**kwargs):
         # build ViT encoder
+        chkpt_dir_vit = kwargs.pop('chkpt_dir_vit')
         num_nuclei_classes = kwargs.pop('num_nuclei_classes')
         num_tissue_classes = kwargs.pop('num_tissue_classes')
         embed_dim = kwargs.pop('embed_dim')
