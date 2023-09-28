@@ -138,8 +138,8 @@ class MoCo(nn.Module):
             self._update_momentum_encoder(m)  # update the momentum encoder
 
             # compute momentum features as targets
-            k1 = self.momentum_encoder(x1)
-            k2 = self.momentum_encoder(x2)
+            k1 = self.momentum_encoder(x1, boxes1, mask)
+            k2 = self.momentum_encoder(x2, boxes2, mask)
 
         return self.contrastive_loss(q1, k2) + self.contrastive_loss(q2, k1)
 
