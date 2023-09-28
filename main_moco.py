@@ -25,6 +25,7 @@ import torch.optim
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
+from util.misc import NativeScalerWithGradNormCount as NativeScaler
 import torchvision.models as torchvision_models
 from torch.distributed.run import get_args_parser
 from torch.utils.tensorboard import SummaryWriter
@@ -33,7 +34,6 @@ import numpy as np
 import os
 import time
 from pathlib import Path
-
 
 import moco.builder
 import moco.loader
