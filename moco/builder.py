@@ -112,7 +112,7 @@ class MoCo(nn.Module):
         for param_b, param_m in zip(self.base_encoder.parameters(), self.momentum_encoder.parameters()):
             param_m.data = param_m.data * m + param_b.data * (1. - m)
 
-    def compute_unigrad_loss(self, pred, target):
+    def compute_unigrad_loss(self, pred, target, neg_weight=0.02):
         #pred = self.student_norm(pred)
         with torch.no_grad():
             target = self.teacher_norm(target)
@@ -130,7 +130,7 @@ class MoCo(nn.Module):
 
         neg_term = torch.diagonal(dense_pred @ correlation @ dense_pred.T).mean()
 
-        loss = (pos_term + self.args.neg_weight * neg_term) / pred.shape[-1]
+        loss = (pos_term + neg_weight * neg_term) / pred.shape[-1]
 
         return loss
 
@@ -165,8 +165,6 @@ class MoCo(nn.Module):
 
         q1 = self.predictor(self.base_encoder(x1, boxes1, mask))
         q2 = self.predictor(self.base_encoder(x2, boxes2, mask))
-
-        print(mask)
 
         with torch.no_grad():  # no gradient
             _mask = mask.clone()
