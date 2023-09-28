@@ -71,6 +71,8 @@ def get_args_parser():
                         help='number of data loading workers (default: 32)')
     parser.add_argument('--epochs', default=100, type=int, metavar='N',
                         help='number of total epochs to run')
+    parser.add_argument('--data_path', default='/Users/piotrwojcik/images_he_seg1000/positive/', type=str,
+                        help='dataset path')
     parser.add_argument('--input_size', default=224, type=int,
                         help='images input size')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
