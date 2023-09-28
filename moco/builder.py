@@ -19,7 +19,7 @@ def _prepare_model(chkpt_dir_vit, **kwargs):
     extract_layers = kwargs.pop('extract_layers')
     drop_rate = kwargs['drop_path_rate']
 
-    vit_encoder = unetr_vit_base_patch16(num_classes=num_tissue_classes)
+    vit_encoder = unetr_vit_base_patch16(num_classes=num_tissue_classes, **kwargs)
 
     # load ViT model
     checkpoint = torch.load(chkpt_dir_vit, map_location='cpu')
