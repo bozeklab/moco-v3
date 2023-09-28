@@ -317,7 +317,7 @@ def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
 
         # compute output
         with torch.cuda.amp.autocast(True):
-            loss = model(x1, x2, boxes1, boxes2, moco_m, labels)
+            loss = model(x1, x2, boxes1, boxes2, moco_m)
 
         loss_value = loss.item()
 
