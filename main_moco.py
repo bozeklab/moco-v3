@@ -338,6 +338,8 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
         # compute output
         with torch.cuda.amp.autocast(True):
             loss = model(x1, x2, boxes1, boxes2, moco_m)
+            print('loss')
+            print(loss)
 
         losses.update(loss.item(), x1.size(0))
         if args.rank == 0:
@@ -347,6 +349,7 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
         optimizer.zero_grad()
         scaler.scale(loss).backward()
         scaler.step(optimizer)
+        print('dupa')
         scaler.update()
 
         # measure elapsed time
