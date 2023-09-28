@@ -72,7 +72,7 @@ class MoCo(nn.Module):
                                                embed_dim=768,
                                                extract_layers=[3, 6, 9, 12])
 
-        self.labels = torch.arange(1000, dtype=torch.long)
+        self.labels = torch.arange(5000, dtype=torch.long)
 
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
