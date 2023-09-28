@@ -58,8 +58,6 @@ model_names = ['vit_small', 'vit_base', 'vit_conv_small', 'vit_conv_base'] + tor
 
 def get_args_parser():
     parser = argparse.ArgumentParser(description='MoCo ImageNet Pre-Training')
-    parser.add_argument('data', metavar='DIR',
-                        help='path to dataset')
     parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet50',
                         choices=model_names,
                         help='model architecture: ' +
