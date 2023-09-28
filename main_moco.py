@@ -165,7 +165,7 @@ def main(args):
     transform_train = DataAugmentationForSIMTraining(args)
     print(f'Pre-train data transform:\n{transform_train}')
 
-    train_dataset = ImgWithPickledBoxesDataset(os.path.join(args.data), transform=transform_train)
+    train_dataset = ImgWithPickledBoxesDataset(os.path.join(args.data_path), transform=transform_train)
     print(f'Build dataset: train images = {len(train_dataset)}')
 
     # build dataloader
