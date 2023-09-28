@@ -299,6 +299,7 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.rank == 0:
         summary_writer.close()
 
+
 def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')

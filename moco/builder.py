@@ -106,24 +106,38 @@ class MoCo(nn.Module):
         for param_b, param_m in zip(self.base_encoder.parameters(), self.momentum_encoder.parameters()):
             param_m.data = param_m.data * m + param_b.data * (1. - m)
 
+    def compute_unigrad_loss(self, pred, target):
+        pred = self.student_norm(pred)
+        with torch.no_grad():
+            target = self.teacher_norm(target)
+
+        dense_pred = pred.reshape(-1, pred.shape[-1])
+        dense_target = target.reshape(-1, target.shape[-1])
+
+        # compute pos term
+        pos_term = ((dense_pred - dense_target) ** 2).sum(-1).mean()
+
+        # compute neg term
+        correlation = (dense_target.T @ dense_target) / dense_target.shape[0]
+        torch.distributed.all_reduce(correlation)
+        correlation = correlation / torch.distributed.get_world_size()
+
+        neg_term = torch.diagonal(dense_pred @ correlation @ dense_pred.T).mean()
+
+        loss = (pos_term + self.args.neg_weight * neg_term) / pred.shape[-1]
+
+        return loss
+
     def contrastive_loss(self, q, k):
         # normalize
         q = nn.functional.normalize(q, dim=1)
         k = nn.functional.normalize(k, dim=1)
         # gather all targets
-        print('before gather')
         k = concat_all_gather(k)
-        print('after gather')
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
-        print('!!!!')
-        print(logits.shape)
         N = logits.shape[0]  # batch size per GPU
-        print('rank')
-        print(torch.distributed.get_rank())
         labels = (torch.arange(N, dtype=torch.long)).cuda()
-        print(N)
-        print(labels)
         return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
 
     def forward(self, x1, x2, boxes1, boxes2, m):
@@ -156,9 +170,8 @@ class MoCo(nn.Module):
             # compute momentum features as targets
             k1 = self.momentum_encoder(x1, boxes1, _mask)
             k2 = self.momentum_encoder(x2, boxes2, _mask)
-            print('momentum')
 
-        return self.contrastive_loss(q1, k2) + self.contrastive_loss(q2, k1)
+        return self.compute_unigrad_loss(q1, k2) + self.compute_unigrad_loss(q2, k1)
 
 
 class MoCo_ResNet(MoCo):
