@@ -127,6 +127,9 @@ def get_args_parser():
     parser.add_argument('--stop-grad-conv1', action='store_true',
                         help='stop-grad after first conv, or patch embedding')
 
+    parser.add_argument('--log_dir', default='./output_dir',
+                        help='path where to tensorboard log')
+
     # other upgrades
     parser.add_argument('--optimizer', default='lars', type=str,
                         choices=['lars', 'adamw'],
@@ -220,7 +223,6 @@ def main(args):
     elif args.optimizer == 'adamw':
         optimizer = torch.optim.AdamW(model.parameters(), args.lr,
                                 weight_decay=args.weight_decay)
-
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
