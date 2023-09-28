@@ -230,7 +230,7 @@ def main(args):
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
-            train_sampler.set_epoch(epoch)
+            data_loader_train.sampler.set_epoch(epoch)
 
         # train for one epoch
         train(data_loader_train, model, optimizer, scaler, summary_writer, epoch, args)
