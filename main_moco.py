@@ -92,6 +92,8 @@ def get_args_parser():
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
 
+    parser.add_argument('--pin_mem', action='store_true',
+                        help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--world-size', default=-1, type=int,
                         help='number of nodes for distributed training')
     parser.add_argument('--seed', default=0, type=int,
@@ -120,6 +122,7 @@ def get_args_parser():
     parser.add_argument('--moco-m-cos', action='store_true',
                         help='gradually increase moco momentum to 1 with a '
                              'half-cycle cosine schedule')
+
     parser.add_argument('--moco-t', default=1.0, type=float,
                         help='softmax temperature (default: 1.0)')
 
