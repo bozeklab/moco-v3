@@ -282,7 +282,7 @@ def main(args):
     print('Training time {}'.format(total_time_str))
 
 
-def train(train_loader, model, optimizer, loss_scaler, log_writer, epoch, args):
+def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
     # switch to train mode
     model.train()
     metric_logger = misc.MetricLogger(delimiter="  ")
