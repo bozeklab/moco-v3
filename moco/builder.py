@@ -143,7 +143,9 @@ class MoCo(nn.Module):
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
         N = logits.shape[0]  # batch size per GPU
+        print('before')
         labels = (torch.arange(N, dtype=torch.long)).cuda()
+        print('after')
         return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
 
     def forward(self, x1, x2, boxes1, boxes2, m):
@@ -175,7 +177,7 @@ class MoCo(nn.Module):
             k1 = self.momentum_encoder(x1, boxes1, _mask)
             k2 = self.momentum_encoder(x2, boxes2, _mask)
 
-        return self.compute_unigrad_loss(q1, k2) + self.compute_unigrad_loss(q2, k1)
+        return self.contrastive_loss(q1, k2) + self.contrastive_loss(q2, k1)
 
 
 class MoCo_ResNet(MoCo):
