@@ -132,7 +132,7 @@ class MoCo(nn.Module):
         boxes2 = boxes2.detach()
         mask1 = torch.all(boxes1 != -1, dim=-1)
         mask2 = torch.all(boxes2 != -1, dim=-1)
-        mask2 = mask2.detach
+        mask2 = mask2.detach()
         mask = torch.logical_and(mask1, mask2)
 
         q1 = self.predictor(self.base_encoder(x1, boxes1, mask))
