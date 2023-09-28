@@ -28,7 +28,14 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as torchvision_models
+from torch.distributed.run import get_args_parser
 from torch.utils.tensorboard import SummaryWriter
+import PIL
+import numpy as np
+import os
+import time
+from pathlib import Path
+
 
 import moco.builder
 import moco.loader
@@ -374,4 +381,9 @@ def adjust_moco_momentum(epoch, args):
 
 
 if __name__ == '__main__':
-    main()
+    args = get_args_parser()
+    args = args.parse_args()
+    if args.output_dir:
+        Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+    main(args)
+
