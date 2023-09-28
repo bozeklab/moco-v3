@@ -323,7 +323,6 @@ def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
         print('!!!')
         print(loss_value)
 
-
         # compute gradient and do SGD step
         optimizer.zero_grad()
         torch.cuda.synchronize()

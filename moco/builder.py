@@ -142,7 +142,10 @@ class MoCo(nn.Module):
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
         N = logits.shape[0]  # batch size per GPU
         labels = (self.labels[:N] + N * torch.distributed.get_rank())
-        return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
+        print('aaaa')
+        x = nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
+        print(labels)
+        return x
 
     def forward(self, x1, x2, boxes1, boxes2, m):
         """
