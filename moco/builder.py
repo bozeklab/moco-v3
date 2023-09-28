@@ -72,6 +72,8 @@ class MoCo(nn.Module):
                                                extract_layers=[3, 6, 9, 12])
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
+        self.base_encoder.freeze_encoder()
+
         for param_b, param_m in zip(self.base_encoder.parameters(), self.momentum_encoder.parameters()):
             param_m.data.copy_(param_b.data)  # initialize
             param_m.requires_grad = False  # not update by gradient
