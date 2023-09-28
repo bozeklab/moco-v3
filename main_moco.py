@@ -189,7 +189,7 @@ def main(args):
         log_writer = None
 
     data_loader_train = torch.utils.data.DataLoader(
-        dataset_train, sampler=sampler_train,
+        train_dataset, sampler=sampler_train,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
@@ -229,7 +229,7 @@ def main(args):
             train_sampler.set_epoch(epoch)
 
         # train for one epoch
-        train(train_loader, model, optimizer, scaler, summary_writer, epoch, args)
+        train(data_loader_train, model, optimizer, scaler, summary_writer, epoch, args)
 
         dist.barrier()
 
