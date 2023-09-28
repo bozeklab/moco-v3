@@ -141,6 +141,7 @@ class MoCo(nn.Module):
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [q, k]) / self.T
         N = logits.shape[0]  # batch size per GPU
+        print(N)
         labels = (self.labels[:N] + N * torch.distributed.get_rank())
         print('aaaa')
         x = nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
