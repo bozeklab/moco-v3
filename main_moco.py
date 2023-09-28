@@ -137,6 +137,8 @@ def get_args_parser():
                         help='minimum scale for random cropping (default: 0.08)')
     parser.add_argument('--output_dir', default='./output_dir',
                         help='path where to save, empty for no saving')
+    parser.add_argument('--device', default='cuda',
+                        help='device to use for training / testing')
 
     return parser
 
