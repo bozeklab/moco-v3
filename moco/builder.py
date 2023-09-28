@@ -60,7 +60,7 @@ class MoCo(nn.Module):
                                            drop_path_rate=0.1,
                                            num_nuclei_classes=6,
                                            num_tissue_classes=19,
-                                           embed_dim=468,
+                                           embed_dim=768,
                                            extract_layers=[3, 6, 9, 12])
 
         self.momentum_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3/encoder-1600.pth',
