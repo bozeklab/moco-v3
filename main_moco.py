@@ -236,12 +236,15 @@ def main(args):
     print(optimizer)
     loss_scaler = NativeScaler(enabled=(not args.fp32), growth_interval=args.amp_growth_interval)
 
+    misc.auto_load_model(args=args, model_without_ddp=model_without_ddp, optimizer=optimizer,
+                         loss_scaler=loss_scaler)
+
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
 
         # train for one epoch
-        train(data_loader_train, model, optimizer, scaler, summary_writer, epoch, args)
+        train(data_loader_train, model, optimizer, loss_scaler, summary_writer, epoch, args)
 
         dist.barrier()
 
