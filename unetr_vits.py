@@ -328,7 +328,6 @@ class CellViT(nn.Module):
         z1 = z1[:, 1:, :].transpose(-1, -2).view(-1, self.embed_dim, *patch_dim)
 
         _, b1 = self._forward_upsample(z0, z1, z2, z3, z4, self.common_decoder)
-        mask = torch.all(boxes != -1, dim=-1)
         boxes_features = self.extract_box_feature(x=b1, boxes_info=boxes, scale_factor=1.,
                                                   mask=mask)
         boxes_features = self.box_embed(boxes_features).squeeze()
