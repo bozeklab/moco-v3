@@ -7,6 +7,9 @@
 import torch
 import torch.nn as nn
 
+from unetr_vits import unetr_vit_base_patch16, cell_vit_base_patch16
+from util.pos_embed import interpolate_pos_embed
+
 
 class MoCo(nn.Module):
     """
@@ -24,9 +27,21 @@ class MoCo(nn.Module):
         self.T = T
 
         # build encoders
-        self.base_encoder = base_encoder(num_classes=mlp_dim)
-        self.momentum_encoder = base_encoder(num_classes=mlp_dim)
+        self.base_encoder = self._prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+                                                init_values=None,
+                                                drop_path_rate=0.1,
+                                                num_nuclei_classes=6,
+                                                num_tissue_classes=19,
+                                                embed_dim=468,
+                                                extract_layers=[3, 6, 9, 12])
 
+        self.momentum_encoder = self._prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+                                                    init_values=None,
+                                                    drop_path_rate=0.1,
+                                                    num_nuclei_classes=6,
+                                                    num_tissue_classes=19,
+                                                    embed_dim=768,
+                                                    extract_layers=[3, 6, 9, 12])
         self._build_projector_and_predictor_mlps(dim, mlp_dim)
 
         for param_b, param_m in zip(self.base_encoder.parameters(), self.momentum_encoder.parameters()):
@@ -50,6 +65,33 @@ class MoCo(nn.Module):
                 mlp.append(nn.BatchNorm1d(dim2, affine=False))
 
         return nn.Sequential(*mlp)
+
+    def _prepare_model(chkpt_dir_vit, **kwargs):
+        # build ViT encoder
+        num_nuclei_classes = kwargs.pop('num_nuclei_classes')
+        num_tissue_classes = kwargs.pop('num_tissue_classes')
+        embed_dim = kwargs.pop('embed_dim')
+        extract_layers = kwargs.pop('extract_layers')
+        drop_rate = kwargs['drop_path_rate']
+
+        vit_encoder = unetr_vit_base_patch16(num_classes=num_tissue_classes)
+
+        # load ViT model
+        checkpoint = torch.load(chkpt_dir_vit, map_location='cpu')
+
+        checkpoint_model = checkpoint['model']
+        interpolate_pos_embed(vit_encoder, checkpoint_model)
+
+        msg = vit_encoder.load_state_dict(checkpoint['model'], strict=False)
+        print(msg)
+        # assert set(msg.missing_keys) == {'head.weight', 'head.bias', 'fc_norm.weight', 'fc_norm.bias'}
+
+        model = cell_vit_base_patch16(num_nuclei_classes=num_nuclei_classes,
+                                      embed_dim=embed_dim,
+                                      extract_layers=extract_layers,
+                                      drop_rate=drop_rate,
+                                      encoder=vit_encoder)
+        return model
 
     def _build_projector_and_predictor_mlps(self, dim, mlp_dim):
         pass
