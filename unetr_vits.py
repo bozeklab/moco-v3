@@ -350,7 +350,7 @@ class CellViT(nn.Module):
                                 output_size=8)
 
         aligned_out = aligned_out.view(batch_size, num_box, embed_dim, 8, 8)[mask]
-        aligned_out.view(-1, self.embed_dim, 8, 8)
+        aligned_out.view(-1, embed_dim, 8, 8)
 
         return aligned_out
 
