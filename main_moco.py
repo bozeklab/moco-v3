@@ -75,7 +75,7 @@ def get_args_parser():
                         help='images input size')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch-size', default=4096, type=int,
+    parser.add_argument('--batch-size', default=4096, type=int,
                         metavar='N',
                         help='mini-batch size (default: 4096), this is the total '
                              'batch size of all GPUs on all nodes when '
