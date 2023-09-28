@@ -55,7 +55,7 @@ class MoCo(nn.Module):
         self.T = T
 
         # build encoders
-        self.base_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+        self.base_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3/encoder-1600.pth',
                                            init_values=None,
                                            drop_path_rate=0.1,
                                            num_nuclei_classes=6,
@@ -63,7 +63,7 @@ class MoCo(nn.Module):
                                            embed_dim=468,
                                            extract_layers=[3, 6, 9, 12])
 
-        self.momentum_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3encoder_path/encoder-1600.pth',
+        self.momentum_encoder = _prepare_model(chkpt_dir_vit='/data/pwojcik/moco-v3/encoder-1600.pth',
                                                init_values=None,
                                                drop_path_rate=0.1,
                                                num_nuclei_classes=6,
