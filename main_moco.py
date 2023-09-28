@@ -260,8 +260,8 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # Data loading code
     #traindir = os.path.join(args.data, 'train')
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+    #normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    #                                 std=[0.229, 0.224, 0.225])
 
     # follow BYOL's augmentation recipe: https://arxiv.org/abs/2006.07733
     transform_train = DataAugmentationForSIMTraining(args)
@@ -327,13 +327,17 @@ def train(train_loader, model, optimizer, scaler, summary_writer, epoch, args):
 
         x1 = sample['x1']
         x2 = sample['x2']
+        boxes1 = sample['boxes1']
+        boxes2 = sample['boxes2']
         if args.gpu is not None:
             x1 = x1.cuda(args.gpu, non_blocking=True)
             x2 = x2.cuda(args.gpu, non_blocking=True)
+            boxes1 = boxes1.cuda(args.gpu, non_blocking=True)
+            boxes2 = boxes2.cuda(args.gpu, non_blocking=True)
 
         # compute output
         with torch.cuda.amp.autocast(True):
-            loss = model(x1, x2, moco_m)
+            loss = model(x1, x2, boxes1, boxes2, moco_m)
 
         losses.update(loss.item(), x1.size(0))
         if args.rank == 0:

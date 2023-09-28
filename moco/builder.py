@@ -116,7 +116,7 @@ class MoCo(nn.Module):
         labels = (torch.arange(N, dtype=torch.long) + N * torch.distributed.get_rank()).cuda()
         return nn.CrossEntropyLoss()(logits, labels) * (2 * self.T)
 
-    def forward(self, x1, x2, m):
+    def forward(self, x1, x2, boxes1, boxes2, m):
         """
         Input:
             x1: first views of images
@@ -127,14 +127,12 @@ class MoCo(nn.Module):
         """
 
         # compute features
-        b0, b1 = self.base_encoder(x1)
-        print('!!!!!')
-        print(b0.shape)
-        print('!!!!!')
-        print(b1.shape)
+        mask1 = torch.all(boxes1 != -1, dim=-1)
+        mask2 = torch.all(boxes2 != -1, dim=-1)
+        mask = torch.logical_and(mask1, mask2)
 
-        q1 = self.predictor(self.base_encoder(x1))
-        q2 = self.predictor(self.base_encoder(x2))
+        q1 = self.predictor(self.base_encoder(x1, boxes1, mask))
+        q2 = self.predictor(self.base_encoder(x2, boxes2, mask))
 
         with torch.no_grad():  # no gradient
             self._update_momentum_encoder(m)  # update the momentum encoder

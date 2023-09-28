@@ -295,7 +295,7 @@ class CellViT(nn.Module):
         self.box_embed = PatchEmbed(img_size=16, patch_size=8,
                                     in_chans=embed_dim, embed_dim=embed_dim)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x, boxes, ):
         """Forward pass
 
         Args:
@@ -327,7 +327,33 @@ class CellViT(nn.Module):
         z2 = z2[:, 1:, :].transpose(-1, -2).view(-1, self.embed_dim, *patch_dim)
         z1 = z1[:, 1:, :].transpose(-1, -2).view(-1, self.embed_dim, *patch_dim)
 
-        return self._forward_upsample(z0, z1, z2, z3, z4, self.common_decoder)
+        _, b1 = self._forward_upsample(z0, z1, z2, z3, z4, self.common_decoder)
+        mask = torch.all(boxes != -1, dim=-1)
+        boxes_features = self.extract_box_feature(x=b1, boxes_info=boxes, scale_factor=1.,
+                                                  mask=mask)
+        boxes_features = self.box_embed(boxes_features).squeeze()
+        return boxes_features
+
+    def extract_box_feature(self, x, boxes_info, scale_factor, mask):
+        h, w = self.patch_embed.grid_size
+        num_box = boxes_info.shape[1]
+        batch_size = x.shape[0]
+        x = x.view(batch_size, h, w, self.embed_dim).permute(0, 3, 1, 2)
+
+        batch_index = torch.arange(0.0, batch_size).repeat(num_box).view(num_box, -1) \
+            .transpose(0, 1).flatten(0, 1).to(x.device)
+        roi_box_info = boxes_info.view(-1, 4).to(x.device)
+
+        roi_info = torch.stack((batch_index, roi_box_info[:, 0],
+                                roi_box_info[:, 1], roi_box_info[:, 2],
+                                roi_box_info[:, 3]), dim=1).to(x.device)
+        aligned_out = roi_align(input=x, boxes=roi_info, spatial_scale=scale_factor,
+                                output_size=8)
+
+        aligned_out = aligned_out.view(batch_size, num_box, self.embed_dim, 8, 8)[mask]
+        aligned_out.view(-1, self.embed_dim, 8, 8)
+
+        return aligned_out
 
     def _forward_upsample(
         self,
