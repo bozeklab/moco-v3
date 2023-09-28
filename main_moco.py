@@ -25,8 +25,6 @@ import torch.optim
 import torch.multiprocessing as mp
 import torch.utils.data
 import torch.utils.data.distributed
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
 import torchvision.models as torchvision_models
 from torch.distributed.run import get_args_parser
 from torch.utils.tensorboard import SummaryWriter
