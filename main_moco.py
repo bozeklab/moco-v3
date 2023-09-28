@@ -320,6 +320,9 @@ def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
             loss = model(x1, x2, boxes1, boxes2, moco_m)
 
         loss_value = loss.item()
+        print('!!!')
+        print(loss_value)
+
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
