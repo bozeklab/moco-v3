@@ -141,6 +141,8 @@ def get_args_parser():
     parser.add_argument('--crop-min', default=0.08, type=float,
                         help='minimum scale for random cropping (default: 0.08)')
 
+    return parser
+
 
 def main(args):
     misc.init_distributed_mode(args)  # need change to torch.engine
