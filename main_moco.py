@@ -321,6 +321,10 @@ def train(train_loader, model, optimizer, scaler, log_writer, epoch, args):
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
+        torch.cuda.synchronize()
+        metric_logger.update(loss=loss_value)
+        print('dupa')
+
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
