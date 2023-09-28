@@ -44,7 +44,7 @@ class MoCo(nn.Module):
     Build a MoCo model with a base encoder, a momentum encoder, and two MLPs
     https://arxiv.org/abs/1911.05722
     """
-    def __init__(self, base_encoder, dim=256, mlp_dim=4096, T=1.0):
+    def __init__(self, base_encoder, dim=768, mlp_dim=4096, T=1.0):
         """
         dim: feature dimension (default: 256)
         mlp_dim: hidden dimension in MLPs (default: 4096)
@@ -156,7 +156,7 @@ class MoCo_ResNet(MoCo):
 class MoCo_ViT(MoCo):
     def _build_projector_and_predictor_mlps(self, dim, mlp_dim):
         hidden_dim = 768#self.base_encoder.head.weight.shape[1]
-        #del self.base_encoder.head, self.momentum_encoder.head # remove original fc layer
+        del self.base_encoder.head, self.momentum_encoder.head # remove original fc layer
 
         # projectors
         self.base_encoder.head = self._build_mlp(3, hidden_dim, mlp_dim, dim)
