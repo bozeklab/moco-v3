@@ -140,6 +140,8 @@ def get_args_parser():
                         help='number of warmup epochs')
     parser.add_argument('--crop-min', default=0.08, type=float,
                         help='minimum scale for random cropping (default: 0.08)')
+    parser.add_argument('--output_dir', default='./output_dir',
+                        help='path where to save, empty for no saving')
 
     return parser
 
